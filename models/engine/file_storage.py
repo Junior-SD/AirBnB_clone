@@ -17,7 +17,7 @@ class FileStorage:
     __file_path = "file.json"
     __objects = {}
     className = {
-            'BaseMogel': BaseModel,
+            'BaseModel': BaseModel,
             'User': User,
             'State': State,
             'City': City,
