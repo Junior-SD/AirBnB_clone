@@ -75,13 +75,13 @@ class HBNBCommand(cmd.Cmd):
         If the instance of the class name doesn’t exist for the id, print 
         ** no instance found ** (ex: $ show BaseModel 121212)
         """
-        line = shlex.split(line)
-        if len(line) == 0:
+        lines = shlex.split(line)
+        if len(lines) == 0:
             print("** class name missing **")
             return False
-        if line[0] in className:
-            if len(line) > 1:
-                key = line[0] + "." + line[1]
+        if lines[0] in className:
+            if len(lines) > 1:
+                key = lines[0] + "." + lines[1]
                 if key in models.storage.all():
                     print(models.storage.all()[key])
                 else:
@@ -93,13 +93,13 @@ class HBNBCommand(cmd.Cmd):
 
     def do_destroy(self, line):
         """Deletes an instance based on class and id """
-        line = shlex.split(line)
-        if len(line) == 0:
+        lines = shlex.split(line)
+        if len(lines) == 0:
             print("** class name missing **")
             return
-        if line[0] in className:
-            if len(line) > 1:
-                key = line[0] + "." + line[1]
+        if lines[0] in className:
+            if len(lines) > 1:
+                key = lines[0] + "." + lines[1]
                 if key in models.storage.all():
                     del models.storage.all()[key]
                     models.storage.save()
@@ -109,7 +109,81 @@ class HBNBCommand(cmd.Cmd):
                 print("** instance id missing **")
         else:
             print("** class doesn't exist **")
-    
+
+    def do_all(self, line):
+        """Prints all string representation of all instances based or\
+                not on the class name
+        """
+        lines = shlex.split(line)
+        obj_list = []
+        if len(lines) == 0:
+            obj_dict = models.storage.all()
+        elif lines[0]  in className:
+            obj_dict = models.storage.all(className[lines[0]])
+        else:
+            print("** class doesn't exist **")
+            return
+        for key in obj_dict:
+            obj_list.append(str(obj_dict[key]))
+        print(f"[{', '.join(obj_list)}]")
+
+    def do_update(self, line):
+        """update an instance based on classname, id- attribute && value
+        """
+        lines = shlex.split(line)
+
+        if len(lines) == 0:
+            print("** class name missing **")
+            return
+        class_name = lines[0]
+
+        # check if instance id is missing
+        if len(lines) < 2:
+            print("** instance id missing **")
+            return
+
+        # chck if class exist
+        if class_name not in className:
+            print("** class doesn't exist **")
+
+        # CHECK IF INSTANCE EXISTS
+        instance_id = lines[1]
+        instance_ket = f"{class_name}.{instance_id}"
+        if instance_key not in model.storage.all():
+            print("** no instance found **")
+            return
+
+        #check if attribute name exists
+        if len(lines) < 3:
+            print("** attribute name missing **")
+            return
+        attribute_name = line[2]
+
+        # check attribute value
+        if len(lines) < 4:
+            print("** value missing **")
+            return
+        attr_value = lines[3]
+
+        # Handle data type conversions for specific attributes
+        integers = ["number_rooms", "number_bathrooms", "max_guest"\
+                , "price_by_night"]
+        floats = ["latitude", "longitude"]
+        if class_name == "Place":
+            if attribute_name in integers:
+                try:
+                    attr_value = int(attr_value)
+                except:
+                    attr_value = 0
+            elif attribute_name in floats:
+                try:
+                    attr_value = float(attr_value)
+                except:
+                    attr_value = 0.0
+
+        setattr(models.storage.all()[instance_key], attribute_name, attr_value)
+        models.storage.all()[instance_key].save()
+
 
 if __name__ == '__main__':
     HBNBCommand().cmdloop()
